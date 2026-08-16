@@ -1,2 +1,3 @@
-2026/08/16-20:13:55.226 6ae8 Creating DB C:\Users\travi\.zcode\workspace\default\nuvio-hhpanda\resolver\pw-profile\Default\GCM Store since it was missing.
-2026/08/16-20:13:55.232 6ae8 Reusing MANIFEST C:\Users\travi\.zcode\workspace\default\nuvio-hhpanda\resolver\pw-profile\Default\GCM Store/MANIFEST-000001
+2026/08/16-21:01:06.148 7cfc Reusing MANIFEST C:\Users\travi\.zcode\workspace\default\nuvio-hhpanda\resolver\pw-profile\Default\GCM Store/MANIFEST-000001
+2026/08/16-21:01:06.149 7cfc Recovering log #3
+2026/08/16-21:01:06.178 7cfc Reusing old log C:\Users\travi\.zcode\workspace\default\nuvio-hhpanda\resolver\pw-profile\Default\GCM Store/000003.log 
