@@ -2,12 +2,20 @@
   "id": "hhpanda",
   "name": "HHPanda (Donghua Vietsub)",
   "description": "Donghua tu HHPANDA (Vietsub + Thuyet minh). Can local resolver (resolver/server.js) chay tren PC cua ban.",
-  "version": "1.0.1",
+  "version": "1.3.0",
   "author": "travi",
   "types": ["series", "tv", "movie", "anime"],
   "supportedTypes": ["series", "tv", "movie", "anime"],
-  "resources": ["stream"],
+  "resources": [
+    "stream",
+    {
+      "name": "stream",
+      "types": ["series", "tv", "movie", "anime"],
+      "idPrefixes": ["tt", "tmdb"]
+    }
+  ],
   "idPrefixes": ["tt", "tmdb"],
+  "catalogs": [],
   "filename": "https://raw.githubusercontent.com/NONOSquare-hub/nuvio-hhpanda/main/providers/hhpanda.js",
   "enabled": true,
   "logo": "",
