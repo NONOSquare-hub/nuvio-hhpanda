@@ -1,6 +1,6 @@
 /**
  * hoathinh3d - Built from src/hoathinh3d/
- * Generated: 2026-08-16T14:31:33.995Z
+ * Generated: 2026-08-16T14:43:17.080Z
  */
 var __defProp = Object.defineProperty;
 var __getOwnPropSymbols = Object.getOwnPropertySymbols;
@@ -47,12 +47,7 @@ var SERVERS = [
   { sv: 1, type: "tiktik", label: "V1 Vietsub" },
   { sv: 2, type: "pro", label: "V2 Thuyet minh" }
 ];
-var DEFAULT_HEADERS = {
-  "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
-  "Accept": "*/*",
-  "Accept-Language": "vi-VN,vi;q=0.9,en;q=0.8",
-  "Referer": "https://hoathinh3d.ee/"
-};
+var DEFAULT_HEADERS = {};
 
 // src/hoathinh3d/utils.js
 function fetchText(url, headers) {
@@ -168,18 +163,6 @@ function findSitePost(titles, season, seasonName) {
     return null;
   });
 }
-function serverHasEmbed(postId, epTag, type, sv) {
-  return __async(this, null, function* () {
-    try {
-      const html = yield fetchText(
-        `${SITE_BASE}/player/player.php?action=dox_ajax_player&post_id=${postId}&chapter_st=tap-${epTag}&type=${type}&sv=${sv}`
-      );
-      return /<iframe[^>]+src="/i.test(html);
-    } catch (e) {
-      return false;
-    }
-  });
-}
 
 // src/hoathinh3d/index.js
 function getStreams(tmdbId, mediaType = "tv", season = 1, episode = 1) {
@@ -188,25 +171,20 @@ function getStreams(tmdbId, mediaType = "tv", season = 1, episode = 1) {
       if (mediaType === "movie")
         return [];
       const titles = yield getTmdbTitles(tmdbId, mediaType);
-      if (!titles || !titles.en)
+      if (!titles || !titles.en && !titles.vi && !titles.orig)
         return [];
       const seasonName = season > 1 ? yield getTmdbSeasonName(tmdbId, season) : null;
       const post = yield findSitePost(titles, season, seasonName);
       if (!post)
         return [];
-      const streams = [];
-      for (const server of SERVERS) {
-        const has = yield serverHasEmbed(post.postId, episode, server.type, server.sv);
-        if (!has)
-          continue;
-        streams.push({
-          name: `HoatHinh3D [${server.label}]`,
-          title: `${post.title} - Tap ${episode}`,
-          url: `${RESOLVER_BASE}/master?post=${post.postId}&slug=${encodeURIComponent(post.slug)}&ep=${episode}&sv=${server.sv}&type=${server.type}`,
-          quality: "1080p",
-          type: "m3u8"
-        });
-      }
+      const epNum = Number(episode || 1);
+      const streams = SERVERS.map((server) => ({
+        name: `HoatHinh3D [${server.label}]`,
+        title: `${post.title} - Tap ${epNum}`,
+        url: `${RESOLVER_BASE}/master?post=${post.postId}&slug=${encodeURIComponent(post.slug)}&ep=${epNum}&sv=${server.sv}&type=${server.type}`,
+        quality: "1080p",
+        type: "m3u8"
+      }));
       return streams;
     } catch (e) {
       return [];

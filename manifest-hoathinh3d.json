@@ -2,7 +2,7 @@
   "id": "hoathinh3d",
   "name": "Hoạt Hình 3D (Vietsub + Thuyết Minh)",
   "description": "Donghua tu HOATHINH3D.EE (Vietsub + Thuyet minh). Can local resolver (resolver/server.js) chay tren PC cua ban.",
-  "version": "1.3.1",
+  "version": "1.4.0",
   "author": "travi",
   "types": ["series", "tv", "movie", "anime"],
   "supportedTypes": ["series", "tv", "movie", "anime"],

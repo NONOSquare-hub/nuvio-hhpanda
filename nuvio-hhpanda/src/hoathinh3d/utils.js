@@ -106,14 +106,3 @@ export async function findSitePost(titles, season, seasonName) {
   }
   return null;
 }
-
-export async function serverHasEmbed(postId, epTag, type, sv) {
-  try {
-    const html = await fetchText(
-      `${SITE_BASE}/player/player.php?action=dox_ajax_player&post_id=${postId}&chapter_st=tap-${epTag}&type=${type}&sv=${sv}`
-    );
-    return /<iframe[^>]+src="/i.test(html);
-  } catch (e) {
-    return false;
-  }
-}
