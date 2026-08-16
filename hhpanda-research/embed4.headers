@@ -1,0 +1,20 @@
+HTTP/1.1 200 OK
+Date: Sun, 16 Aug 2026 11:49:36 GMT
+Content-Type: text/html; charset=utf-8
+Transfer-Encoding: chunked
+Connection: keep-alive
+Cache-Control: no-store, no-cache, must-revalidate, max-age=0
+Expires: 0
+Pragma: no-cache
+Set-Cookie: uid=e212aa99-e5c7-4607-9e23-72ad68c2c403; Path=/; Expires=Mon, 16 Aug 2027 11:49:36 GMT; Max-Age=31536000; HttpOnly; Secure; SameSite=Lax
+Via: 1.1 Caddy
+cf-cache-status: DYNAMIC
+Nel: {"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}
+Speculation-Rules: "/cdn-cgi/speculation"
+Server-Timing: cfCacheStatus;desc="DYNAMIC"
+Server-Timing: cfEdge;dur=4,cfOrigin;dur=33
+Report-To: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=a6BknCDECvUZDs6Pl%2BAmCU8D%2FvybYIuV8GD%2FhLO77jr8X5Sv9PPRMezuhViDymZuQKWb%2BCqpKPWYgaM12RbUl7pLVY4%2FNDetyEINz%2Ft0PLLrie%2FTNonZzh%2FXPA6JMQQ7FcUzSRtQIoTTJY9bww%3D%3D"}]}
+Server: cloudflare
+CF-RAY: a2c03778a919c90f-SIN
+alt-svc: h3=":443"; ma=86400
+

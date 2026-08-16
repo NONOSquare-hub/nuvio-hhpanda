@@ -1,0 +1,19 @@
+{
+  "name": "hhpanda-stremio-addon",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Stremio catalog/metadata/episode addon for HHPANDA pages.",
+  "main": "addon.js",
+  "scripts": {
+    "start": "node addon.js",
+    "dev": "node --watch addon.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "cheerio": "^1.0.0",
+    "dotenv": "^16.4.7",
+    "stremio-addon-sdk": "^1.6.10"
+  }
+}

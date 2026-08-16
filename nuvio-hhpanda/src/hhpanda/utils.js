@@ -1,0 +1,104 @@
+import { HHPANDA_BASE, TMDB_API_KEY, DEFAULT_HEADERS } from './constants.js';
+
+export async function fetchText(url, headers) {
+  const resp = await fetch(url, { headers: { ...DEFAULT_HEADERS, ...(headers || {}) } });
+  if (!resp.ok) throw new Error(`HTTP ${resp.status} for ${url}`);
+  return resp.text();
+}
+
+export async function fetchJson(url, headers) {
+  return JSON.parse(await fetchText(url, headers));
+}
+
+// TMDB id -> titles in English and Vietnamese (hhpanda tags posts with both)
+export async function getTmdbTitles(tmdbId, mediaType) {
+  try {
+    const kind = mediaType === 'movie' ? 'movie' : 'tv';
+    const base = `https://api.themoviedb.org/3/${kind}/${tmdbId}?api_key=${TMDB_API_KEY}`;
+    const en = await fetchJson(base);
+    let vi = null;
+    try {
+      const viData = await fetchJson(base + '&language=vi');
+      vi = viData.name || viData.title || null;
+    } catch (e) {}
+    return {
+      en: en.name || en.title || en.original_title || en.original_name || null,
+      orig: en.original_name || en.original_title || null,
+      vi,
+    };
+  } catch (e) {
+    return null;
+  }
+}
+
+// TMDB season name (donghua seasons on hhpanda are separate posts tagged by season name)
+export async function getTmdbSeasonName(tmdbId, season) {
+  if (!season || season < 1) return null;
+  try {
+    const data = await fetchJson(`https://api.themoviedb.org/3/tv/${tmdbId}/season/${season}?api_key=${TMDB_API_KEY}`);
+    return data.name || null;
+  } catch (e) {
+    return null;
+  }
+}
+
+// "Link Click: Bridon Arc" -> "link-click-bridon-arc" (WordPress slug style)
+export function slugify(title) {
+  return String(title || '')
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[''.`]/g, '')
+    .replace(/&/g, ' ')
+    .replace(/[^a-zA-Z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .toLowerCase();
+}
+
+// Find the HHPanda post for a show via the open WP REST API.
+// Tries: "<en title> <season name>", season name alone, en title, vi title, original title,
+// "<title> season N". Donghua seasons are usually separate posts tagged "<title> <season name>".
+// Returns { postId, slug, title } or null.
+export async function findHhpandaPost(titles, season, seasonName) {
+  const bases = [titles.en, titles.vi, titles.orig].filter(Boolean);
+  const candidates = [];
+  for (const b of bases) {
+    if (seasonName) candidates.push(`${b} ${seasonName}`);
+    if (season && season > 1) candidates.push(`${b} season ${season}`);
+    candidates.push(b);
+  }
+  if (seasonName) candidates.push(seasonName);
+
+  const seen = new Set();
+  for (const candidate of candidates) {
+    const slug = slugify(candidate);
+    if (!slug || seen.has(slug)) continue;
+    seen.add(slug);
+    try {
+      const tags = await fetchJson(`${HHPANDA_BASE}/wp-json/wp/v2/tags?slug=${encodeURIComponent(slug)}`);
+      if (!Array.isArray(tags) || tags.length === 0) continue;
+      const posts = await fetchJson(`${HHPANDA_BASE}/wp-json/wp/v2/posts?tags=${tags[0].id}&per_page=5`);
+      if (!Array.isArray(posts) || posts.length === 0) continue;
+      const post = posts[0];
+      return {
+        postId: post.id,
+        slug: post.slug,
+        title: (post.title && post.title.rendered) || candidate,
+      };
+    } catch (e) {
+      // try next candidate
+    }
+  }
+  return null;
+}
+
+// Check that a server actually exists for this episode (hhpanda returns an <img> for missing servers)
+export async function serverHasEmbed(postId, epTag, type, sv) {
+  try {
+    const html = await fetchText(
+      `${HHPANDA_BASE}/player/player.php?action=dox_ajax_player&post_id=${postId}&chapter_st=tap-${epTag}&type=${type}&sv=${sv}`
+    );
+    return /<iframe[^>]+src="/i.test(html);
+  } catch (e) {
+    return false;
+  }
+}
