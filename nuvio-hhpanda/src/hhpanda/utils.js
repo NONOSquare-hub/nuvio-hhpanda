@@ -10,9 +10,30 @@ export async function fetchJson(url, headers) {
   return JSON.parse(await fetchText(url, headers));
 }
 
+export async function resolveTmdbId(id, mediaType) {
+  let cleanId = String(id || '').trim();
+  if (cleanId.includes(':')) {
+    cleanId = cleanId.split(':')[0];
+  }
+  if (cleanId.startsWith('tmdb:')) {
+    cleanId = cleanId.replace('tmdb:', '');
+  }
+  if (cleanId.startsWith('tt')) {
+    try {
+      const res = await fetchJson(`https://api.themoviedb.org/3/find/${cleanId}?api_key=${TMDB_API_KEY}&external_source=imdb_id`);
+      const list = mediaType === 'movie' ? res.movie_results : res.tv_results;
+      if (list && list.length > 0) {
+        return list[0].id;
+      }
+    } catch (e) {}
+  }
+  return cleanId;
+}
+
 // TMDB id -> titles in English and Vietnamese (hhpanda tags posts with both)
-export async function getTmdbTitles(tmdbId, mediaType) {
+export async function getTmdbTitles(rawTmdbId, mediaType) {
   try {
+    const tmdbId = await resolveTmdbId(rawTmdbId, mediaType);
     const kind = mediaType === 'movie' ? 'movie' : 'tv';
     const base = `https://api.themoviedb.org/3/${kind}/${tmdbId}?api_key=${TMDB_API_KEY}`;
     const en = await fetchJson(base);
@@ -22,6 +43,7 @@ export async function getTmdbTitles(tmdbId, mediaType) {
       vi = viData.name || viData.title || null;
     } catch (e) {}
     return {
+      tmdbId,
       en: en.name || en.title || en.original_title || en.original_name || null,
       orig: en.original_name || en.original_title || null,
       vi,
@@ -32,9 +54,10 @@ export async function getTmdbTitles(tmdbId, mediaType) {
 }
 
 // TMDB season name (donghua seasons on hhpanda are separate posts tagged by season name)
-export async function getTmdbSeasonName(tmdbId, season) {
+export async function getTmdbSeasonName(rawTmdbId, season) {
   if (!season || season < 1) return null;
   try {
+    const tmdbId = await resolveTmdbId(rawTmdbId, 'tv');
     const data = await fetchJson(`https://api.themoviedb.org/3/tv/${tmdbId}/season/${season}?api_key=${TMDB_API_KEY}`);
     return data.name || null;
   } catch (e) {

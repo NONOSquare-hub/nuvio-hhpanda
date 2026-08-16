@@ -1,6 +1,6 @@
 /**
  * hhpanda - Built from src/hhpanda/
- * Generated: 2026-08-16T13:13:42.028Z
+ * Generated: 2026-08-16T13:54:09.341Z
  */
 var __defProp = Object.defineProperty;
 var __getOwnPropSymbols = Object.getOwnPropertySymbols;
@@ -68,9 +68,32 @@ function fetchJson(url, headers) {
     return JSON.parse(yield fetchText(url, headers));
   });
 }
-function getTmdbTitles(tmdbId, mediaType) {
+function resolveTmdbId(id, mediaType) {
+  return __async(this, null, function* () {
+    let cleanId = String(id || "").trim();
+    if (cleanId.includes(":")) {
+      cleanId = cleanId.split(":")[0];
+    }
+    if (cleanId.startsWith("tmdb:")) {
+      cleanId = cleanId.replace("tmdb:", "");
+    }
+    if (cleanId.startsWith("tt")) {
+      try {
+        const res = yield fetchJson(`https://api.themoviedb.org/3/find/${cleanId}?api_key=${TMDB_API_KEY}&external_source=imdb_id`);
+        const list = mediaType === "movie" ? res.movie_results : res.tv_results;
+        if (list && list.length > 0) {
+          return list[0].id;
+        }
+      } catch (e) {
+      }
+    }
+    return cleanId;
+  });
+}
+function getTmdbTitles(rawTmdbId, mediaType) {
   return __async(this, null, function* () {
     try {
+      const tmdbId = yield resolveTmdbId(rawTmdbId, mediaType);
       const kind = mediaType === "movie" ? "movie" : "tv";
       const base = `https://api.themoviedb.org/3/${kind}/${tmdbId}?api_key=${TMDB_API_KEY}`;
       const en = yield fetchJson(base);
@@ -81,6 +104,7 @@ function getTmdbTitles(tmdbId, mediaType) {
       } catch (e) {
       }
       return {
+        tmdbId,
         en: en.name || en.title || en.original_title || en.original_name || null,
         orig: en.original_name || en.original_title || null,
         vi
@@ -90,11 +114,12 @@ function getTmdbTitles(tmdbId, mediaType) {
     }
   });
 }
-function getTmdbSeasonName(tmdbId, season) {
+function getTmdbSeasonName(rawTmdbId, season) {
   return __async(this, null, function* () {
     if (!season || season < 1)
       return null;
     try {
+      const tmdbId = yield resolveTmdbId(rawTmdbId, "tv");
       const data = yield fetchJson(`https://api.themoviedb.org/3/tv/${tmdbId}/season/${season}?api_key=${TMDB_API_KEY}`);
       return data.name || null;
     } catch (e) {
